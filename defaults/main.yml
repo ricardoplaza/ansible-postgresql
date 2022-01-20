@@ -1,0 +1,9 @@
+---
+bootstrap_postgresql_group: ""
+bootstrap_postgresql_db_suffix: ""
+
+bootstrap_postgresql_users:
+  postgresql: []
+
+bootstrap_postgresql_users_absent:
+  postgresql: []

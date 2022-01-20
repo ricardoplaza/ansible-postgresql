@@ -1,0 +1,19 @@
+---
+galaxy_info:
+  author: Ricardo Plaza
+  description: Create databases and users of PostgreSQL databases for a given environment
+  issue_tracker_url: https://github.com/ricardoplaza/ansible-postgresql/issues
+  license: Apache
+  min_ansible_version: 3.6
+  platforms:
+  - name: Ubuntu
+    versions:
+    - xenial
+    - bionic
+  - name: Debian
+    versions:
+    - jessie
+    - stretch
+  galaxy_tags:
+  - database
+  - database:postgresql

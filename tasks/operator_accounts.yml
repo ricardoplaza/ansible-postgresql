@@ -1,0 +1,94 @@
+---
+- name: Create operator user accounts
+  postgresql_user:
+    login_host: "{{ postgresql_auth[bootstrap_postgresql_group].host }}"
+    login_user: "{{ postgresql_auth[bootstrap_postgresql_group].admin_name }}"
+    login_password: "{{ postgresql_auth[bootstrap_postgresql_group].admin_password }}"
+    db: "{{ item.1.database }}"
+    name: "{{ item.0.name }}"
+    password: "{{ item.0.password }}"
+    priv: CONNECT
+    state: present
+  with_subelements:
+  - "{{ bootstrap_postgresql_users[bootstrap_postgresql_group] | flatten }}"
+  - databases
+  when: >
+    bootstrap_postgresql_users_absent is defined and
+    bootstrap_postgresql_users_absent[bootstrap_postgresql_group] is defined
+
+- name: Grant privs in tables to users
+  postgresql_privs:
+    login_host: "{{ postgresql_auth[bootstrap_postgresql_group].host }}"
+    login_user: "{{ postgresql_auth[bootstrap_postgresql_group].admin_name }}"
+    login_password: "{{ postgresql_auth[bootstrap_postgresql_group].admin_password }}"
+    db: "{{ item.1.database }}"
+    role: "{{ item.0.name }}"
+    state: present
+    privs: "{{ item.1.priv_table }}"
+    type: table
+    schema: public
+    objs: ALL_IN_SCHEMA
+    grant_option: no
+  with_subelements:
+  - "{{ bootstrap_postgresql_users[bootstrap_postgresql_group] | flatten }}"
+  - databases
+  when: >
+    bootstrap_postgresql_users_absent is defined and
+    bootstrap_postgresql_users_absent[bootstrap_postgresql_group] is defined
+
+- name: Grant privs in functions to users
+  postgresql_privs:
+    login_host: "{{ postgresql_auth[bootstrap_postgresql_group].host }}"
+    login_user: "{{ postgresql_auth[bootstrap_postgresql_group].admin_name }}"
+    login_password: "{{ postgresql_auth[bootstrap_postgresql_group].admin_password }}"
+    db: "{{ item.1.database }}"
+    role: "{{ item.0.name }}"
+    state: present
+    privs: "{{ item.1.priv_function }}"
+    type: function
+    schema: public
+    objs: ALL_IN_SCHEMA
+    grant_option: no
+  with_subelements:
+  - "{{ bootstrap_postgresql_users[bootstrap_postgresql_group] | flatten }}"
+  - databases
+  when: >
+    bootstrap_postgresql_users_absent is defined and
+    bootstrap_postgresql_users_absent[bootstrap_postgresql_group] is defined
+
+- name: Grant privs in sequences to users
+  postgresql_privs:
+    login_host: "{{ postgresql_auth[bootstrap_postgresql_group].host }}"
+    login_user: "{{ postgresql_auth[bootstrap_postgresql_group].admin_name }}"
+    login_password: "{{ postgresql_auth[bootstrap_postgresql_group].admin_password }}"
+    db: "{{ item.1.database }}"
+    role: "{{ item.0.name }}"
+    state: present
+    privs: "{{ item.1.priv_sequence }}"
+    type: sequence
+    schema: public
+    objs: ALL_IN_SCHEMA
+    grant_option: no
+  with_subelements:
+  - "{{ bootstrap_postgresql_users[bootstrap_postgresql_group] | flatten }}"
+  - databases
+  when: >
+    bootstrap_postgresql_users_absent is defined and
+    bootstrap_postgresql_users_absent[bootstrap_postgresql_group] is defined
+
+- name: Remove operator user accounts
+  postgresql_user:
+    login_host: "{{ postgresql_auth[bootstrap_postgresql_group].host }}"
+    login_user: "{{ postgresql_auth[bootstrap_postgresql_group].admin_name }}"
+    login_password: "{{ postgresql_auth[bootstrap_postgresql_group].admin_password }}"
+    db: "{{ item.1.database }}"
+    name: "{{ item.0.name }}"
+    password: "{{ item.0.password }}"
+    priv: "{{ item.1.priv }}"
+    state: absent
+  with_subelements:
+  - "{{ bootstrap_postgresql_users_absent[bootstrap_postgresql_group] }}"
+  - databases
+  when: >
+    bootstrap_postgresql_users_absent is defined and
+    bootstrap_postgresql_users_absent[bootstrap_postgresql_group] is defined

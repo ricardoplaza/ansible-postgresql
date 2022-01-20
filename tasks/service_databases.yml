@@ -1,0 +1,82 @@
+---
+- name: Create PostgreSQL databases
+  postgresql_db:
+    login_host: "{{ postgresql_auth[bootstrap_postgresql_group].host }}"
+    login_user: "{{ postgresql_auth[bootstrap_postgresql_group].admin_name }}"
+    login_password: "{{ postgresql_auth[bootstrap_postgresql_group].admin_password }}"
+    name: "{{ item.value.database }}"
+    state: present
+  with_dict: "{{ postgresql[bootstrap_postgresql_group] }}"
+  when: >
+    postgresql is defined and
+    postgresql[bootstrap_postgresql_group] is defined
+
+- name: Create PostgreSQL users
+  postgresql_user:
+    login_host: "{{ postgresql_auth[bootstrap_postgresql_group].host }}"
+    login_user: "{{ postgresql_auth[bootstrap_postgresql_group].admin_name }}"
+    login_password: "{{ postgresql_auth[bootstrap_postgresql_group].admin_password }}"
+    db: "{{ item.value.database }}"
+    name: "{{ item.value.user }}"
+    password: "{{ item.value.password }}"
+    priv: "{{ item.value.priv | default('ALL')}}"
+    role_attr_flags: "{{ item.value.role | default(omit) }}"
+    state: present
+  with_dict: "{{ postgresql[bootstrap_postgresql_group] }}"
+  when: >
+    postgresql is defined and
+    postgresql[bootstrap_postgresql_group] is defined
+
+- name: Grant privs in tables to users
+  postgresql_privs:
+    login_host: "{{ postgresql_auth[bootstrap_postgresql_group].host }}"
+    login_user: "{{ postgresql_auth[bootstrap_postgresql_group].admin_name }}"
+    login_password: "{{ postgresql_auth[bootstrap_postgresql_group].admin_password }}"
+    db: "{{ item.value.database }}"
+    role: "{{ item.value.user }}"
+    state: present
+    privs: "{{ item.value.priv_table | default('ALL') }}"
+    type: table
+    schema: public
+    objs: ALL_IN_SCHEMA
+    grant_option: no
+  with_dict: "{{ postgresql[bootstrap_postgresql_group] }}"
+  when: >
+    postgresql is defined and
+    postgresql[bootstrap_postgresql_group] is defined
+
+- name: Grant privs in functions to users
+  postgresql_privs:
+    login_host: "{{ postgresql_auth[bootstrap_postgresql_group].host }}"
+    login_user: "{{ postgresql_auth[bootstrap_postgresql_group].admin_name }}"
+    login_password: "{{ postgresql_auth[bootstrap_postgresql_group].admin_password }}"
+    db: "{{ item.value.database }}"
+    role: "{{ item.value.user }}"
+    state: present
+    privs: "{{ item.value.priv_function | default('ALL') }}"
+    type: function
+    schema: public
+    objs: ALL_IN_SCHEMA
+    grant_option: no
+  with_dict: "{{ postgresql[bootstrap_postgresql_group] }}"
+  when: >
+    postgresql is defined and
+    postgresql[bootstrap_postgresql_group] is defined
+  
+- name: Grant privs in sequences to users
+  postgresql_privs:
+    login_host: "{{ postgresql_auth[bootstrap_postgresql_group].host }}"
+    login_user: "{{ postgresql_auth[bootstrap_postgresql_group].admin_name }}"
+    login_password: "{{ postgresql_auth[bootstrap_postgresql_group].admin_password }}"
+    db: "{{ item.value.database }}"
+    role: "{{ item.value.user }}"
+    state: present
+    privs: "{{ item.value.priv_sequence | default('ALL') }}"
+    type: sequence
+    schema: public
+    objs: ALL_IN_SCHEMA
+    grant_option: no
+  with_dict: "{{ postgresql[bootstrap_postgresql_group] }}"
+  when: >
+    postgresql is defined and
+    postgresql[bootstrap_postgresql_group] is defined
